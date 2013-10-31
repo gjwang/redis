@@ -8,10 +8,10 @@
 #   -k    start the redis-server and promote it to MASTER 
 # 
 REDIS_HOME="/usr/local/bin" 
-REDIS_COMMANDS="/usr/local/bin"                # redis执行文件的目录 
-REDIS_MASTER_IP="192.168.0.1"                  # Redis MASTER ip 
+REDIS_COMMANDS="/usr/local/bin"                 # redis执行文件的目录 
+REDIS_MASTER_IP="192.168.0.2"                  # Redis MASTER ip 
 REDIS_MASTER_PORT="6379"                        # Redis MASTER port 
-REDIS_CONF="/etc/keepalived/keepalived.conf"                     # 配置文件 
+REDIS_CONF="/etc/redis.conf"    # 配置文件 
  
 E_INVALID_ARGS=65 
 E_INVALID_COMMAND=66 
@@ -26,7 +26,7 @@ error() {
 } 
  
 start_redis() { 
-      alive=`${REDIS_COMMANDS}/redis-cli PING` 
+      alive='${REDIS_COMMANDS}/redis-cli PING'
       if [ "$alive" != "PONG" ]; then 
         ${REDIS_COMMANDS}/redis-server ${REDIS_CONF} 
         sleep 1 
