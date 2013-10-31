@@ -1,0 +1,4 @@
+redis
+=====
+
+keepalived redis test
