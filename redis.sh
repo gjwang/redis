@@ -9,7 +9,7 @@
 # 
 REDIS_HOME="/usr/local/bin" 
 REDIS_COMMANDS="/usr/local/bin"                # redis执行文件的目录 
-REDIS_MASTER_IP="127.0.0.1"                  # Redis MASTER ip 
+REDIS_MASTER_IP="192.168.0.1"                  # Redis MASTER ip 
 REDIS_MASTER_PORT="6379"                        # Redis MASTER port 
 REDIS_CONF="/etc/keepalived/keepalived.conf"                     # 配置文件 
  
@@ -28,7 +28,7 @@ error() {
 start_redis() { 
       alive=`${REDIS_COMMANDS}/redis-cli PING` 
       if [ "$alive" != "PONG" ]; then 
-        ${REDIS_COMMANDS}/redis-server ${REDIS_HOME}/${REDIS_CONF} 
+        ${REDIS_COMMANDS}/redis-server ${REDIS_CONF} 
         sleep 1 
       fi 
 } 
