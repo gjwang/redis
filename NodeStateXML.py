@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import os
 import socket
+import urllib2
 import logging
 import logging.handlers
 
@@ -22,18 +23,19 @@ else:
     print "Only surpport linux platform"
 
 class NodeStateXML(object):
-    def __init__(self, filename, nodeID, wwwroot = '/data', 
+    def __init__(self, nodeID, wwwroot = '/data', filename=None, posturl=None,
                  ip = None,
                  nodeStatus="idle", CntUserNow="200", CntUserMax="500", BWNow="200", BWMax="500", 
                  CPUAverageRatio="3", CPUPeakRatio="5", memAverageRatio="20", memPeakRatio="30", 
                  northboundIdleBW="100", northboundConcurrencies="150", southboundIdleBW="300", southboundConcurriencies="200",
                  idleDiskSpace="5t", IOWBw="50Mbps", IORBw="70Mbps", timeStamp="1383593423",                  
-                 ifname='eth0', port = '8088', hostname = None, xmlUrl=None, 
-                 ):
+                 ifname='eth0', port = '80', hostname = None, xmlUrl=None, 
+                ):
 
         self.__logger = logging.getLogger(self.__class__.__name__)
         
         self.filename = filename
+        self.posturl = posturl
         self.wwwroot = wwwroot
 
         self.ifname = ifname #netcard name
@@ -103,7 +105,7 @@ class NodeStateXML(object):
     def setCPUPeakRatio(self, CPUPeakRatio):
         self.nodeLoad.set("CPUPeakRatio", CPUPeakRatio)
 
-    def setmemPeakRatio(self, memPeakRatio):
+    def setmemAverageRatio(self, memAverageRatio):
         self.nodeLoad.set("memAverageRatio", memAverageRatio)
 
     def setmemPeakRatio(self, memPeakRatio):
@@ -112,8 +114,8 @@ class NodeStateXML(object):
     def setnorthboundIdleBW(self, northboundIdleBW):
         self.nodeLoad.set("northboundIdleBW", northboundIdleBW)
 
-    def setnorthboundIdleBW(self, northboundIdleBW):
-        self.nodeLoad.set("northboundIdleBW", northboundConcurrencies)
+    def setnorthboundConcurrencies(self, northboundConcurrencies):
+        self.nodeLoad.set("northboundConcurrencies", northboundConcurrencies)
 
     def setsouthboundIdleBW(self, southboundIdleBW):
         self.nodeLoad.set("southboundIdleBW", southboundIdleBW)
@@ -133,16 +135,35 @@ class NodeStateXML(object):
     def settimeStamp(self, timeStamp):
         self.nodeLoad.set("timeStamp", timeStamp)
 
+    def tostring(self):
+        return ET.tostring(self.__root, encoding="UTF-8")
     
     def writeToFile(self):
+        if self.filename is None:
+            self.__logger.error("xml filename is null")
+            print "xml filename is null"
+            return
+
         try:
             self.__tree.write(os.path.join(self.wwwroot, self.filename), encoding="UTF-8", xml_declaration=True)
         except Exception as exc:
             self.__logger.error("Exception: %s occured while write %s", exc, os.path.join(self.wwwroot, self.filename))
-            #print exc
+            print "Exception: %s occured while write %s"%(exc, os.path.join(self.wwwroot, self.filename))
 
-    def tostring(self):
-        return ET.tostring(self.__root, encoding="UTF-8")
+    def postToServer(self):
+        if self.posturl is None:
+            self.__logger.error("posturl is null")
+            print "posturl is null"
+            return
+
+        try:
+            req = urllib2.Request(url=self.posturl, 
+                                  data=self.tostring(), 
+                                  headers={'Content-Type': 'application/xml'})
+            urllib2.urlopen(req)
+        except Exception as exc:
+            self.__logger.error("Exception: %s occured post xml to: %s", exc, self.posturl)
+            print "Exception: %s occured post xml to: %s"%(exc, self.posturl)
 
 
 if __name__ == "__main__":
