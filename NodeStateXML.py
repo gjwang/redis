@@ -145,7 +145,7 @@ class NodeStateXML(object):
             return
 
         try:
-            self.__tree.write(os.path.join(self.wwwroot, self.filename), encoding="UTF-8", xml_declaration=True)
+            self.__tree.write(os.path.join(self.wwwroot, self.filename), encoding="UTF-8")
         except Exception as exc:
             self.__logger.error("Exception: %s occured while write %s", exc, os.path.join(self.wwwroot, self.filename))
             print "Exception: %s occured while write %s"%(exc, os.path.join(self.wwwroot, self.filename))
