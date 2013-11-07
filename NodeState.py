@@ -50,15 +50,9 @@ def main():
     ndst.set_interval(interval=1)
     while 1:    
         try:
-            #print "diskfree: %s" % ndst.get_diskfree()
-            #print "memusage: %s" % ndst.get_memusage()
+	    #get_io must be call before get get_cpuusage
             dkread, dkwrite, netsent, netrecv = ndst.get_io()
-            #print "dkr:%s, dkw:%s, nets:%s, netr:%s" % ndst.get_io()
             
-            #get_cpuusage must after get_io
-            #print "cpuusage: %s" % ndst.get_cpuusage()
-            #print "conns:    %s" % ndst.get_connections()
-
             ndstxml.setConnNow(str(ndst.get_connections()))
             ndstxml.setCPUAverageRatio(str(ndst.get_cpuusage()))
             ndstxml.setmemAverageRatio(str(ndst.get_memusage()))
@@ -73,10 +67,10 @@ def main():
             ndstxml.setNodeStatus("idle")
             ndstxml.writeToFile()
 
-            print ndstxml.tostring()
             ndstxml.postToServer()
             
             ndst.set_interval(interval)
+	    logger.info("xmlstring: %s", ndstxml.tostring());
         except Exception as exc:
             logger.error("Exception: %s while checking node state", exc)
             print "Exception: %s while checking node state" % exc
