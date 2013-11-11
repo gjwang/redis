@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 '''
 Created on 2013-11-04
@@ -21,6 +22,9 @@ from psutil._compat import print_
 
 import socket
 from socket import AF_INET, SOCK_STREAM, SOCK_DGRAM
+
+from conf import *
+
 
 AD = "-"
 AF_INET6 = getattr(socket, 'AF_INET6', object())
@@ -49,10 +53,18 @@ def bytes2human(n):
 
 
 class NodeState(object):
-    def __init__(self, interval = 10, mountpoint='/data', device = None, netcard = 'eth0', psname = None):
+    def __init__(self, interval = 1, mountpoint='/data', device = None, netcard = 'eth0', 
+                 bandwidth_max=1024*1024*1024/8, conn_max = 1000, psname = None):
         self.__logger = logging.getLogger(self.__class__.__name__)
 
+        if interval == 0:
+            interval = 1;
         self.interval = interval
+
+
+        self.bandwidth_max = bandwidth_max #bytes
+        self.conn_max = conn_max
+
         self.mountpoint = mountpoint
         self.device = device
         self.netcard = netcard
@@ -62,7 +74,15 @@ class NodeState(object):
         self.disks_write = 0
         self.netsent = 0
         self.recv = 0
-        self.cpuuaage = 0
+        self.cpuusage = 0
+        self.cpupeak_radio = 0
+        self.mempeak_radio = 0
+
+    def get_bwmax(self):
+        return self.bandwidth_max
+
+    def get_conn_max(self):
+        return self.conn_max
 
     def get_diskfree(self):
         #templ = "%-17s %8s %8s %8s %5s%% %9s  %s"
@@ -95,6 +115,8 @@ class NodeState(object):
             
 
     def set_interval(self, interval):
+        if interval == 0:
+            interval = 1;
         self.interval = interval
 
     def get_memusage(self):
@@ -105,7 +127,7 @@ class NodeState(object):
         #for cpu_num, perc in enumerate(psutil.cpu_percent(interval=0, percpu=True)):
         #print "cpu_num:%s, perc:%s" % (cpu_num, perc)
         #return psutil.cpu_percent(interval=0)
-        return self.cpuuaage
+        return self.cpuusage
 
 
 
@@ -160,7 +182,8 @@ class NodeState(object):
                 #        bytes2human(tot_after.bytes_recv),
                 #        bytes2human(tot_after.bytes_recv - tot_before.bytes_recv) + '/s',
                 #        ))        
-                return tot_after.bytes_sent - tot_before.bytes_sent, tot_after.bytes_recv - tot_before.bytes_recv
+                return (int((tot_after.bytes_sent - tot_before.bytes_sent)/self.interval), 
+                        int((tot_after.bytes_recv - tot_before.bytes_recv)/self.interval))
                 
             # per-network interface details: let's sort network interfaces so
             # that the ones which generated more traffic are shown first
@@ -196,8 +219,10 @@ class NodeState(object):
                 #))
                 #print_("")
 
-                return stats_after.bytes_sent - stats_before.bytes_sent, stats_after.bytes_recv - stats_before.bytes_recv
-            return 0, 0
+                return (int((tot_after.bytes_sent - tot_before.bytes_sent)/self.interval), 
+                        int((tot_after.bytes_recv - tot_before.bytes_recv)/self.interval))
+
+            return (0, 0)
 
         disks_before = psutil.disk_io_counters()
         tot_before = psutil.net_io_counters()
@@ -206,28 +231,44 @@ class NodeState(object):
         # sleep some time
         #TODO: psutil.cpu_percent(interval=self.interval)
         #time.sleep(self.interval)
-        psutil.cpu_percent(interval=self.interval)
+        self.cpuusage = psutil.cpu_percent(interval=self.interval)
 
         disks_after = psutil.disk_io_counters()
         tot_after = psutil.net_io_counters()
         pnic_after = psutil.net_io_counters(pernic=True)
 
 
-        self.disks_read = disks_after.read_bytes - disks_before.read_bytes
-        self.disks_write = disks_after.write_bytes - disks_before.write_bytes
+        self.disks_read  = int((disks_after.read_bytes - disks_before.read_bytes)/self.interval)
+        self.disks_write = int((disks_after.write_bytes - disks_before.write_bytes)/self.interval)
 
         self.netsent, self.netrecv = refresh_netinfo(tot_before, tot_after, pnic_before, pnic_after)
 
         #print "dk r:%sb/s, w:%sb/s" % (disks_read_per_sec, disks_write_per_sec)
         return (self.disks_read, self.disks_write, self.netsent, self.netrecv)
 
+    def get_cpupeak_ratio(self):
+        #TODO: What exactly does it mean?
+        #return self.cpupeak_radio 
+        return self.cpuusage
 
+    def get_mempeak_ratio(self):
+        #TODO: What exactly does it mean?
+        #return self.mempeak_radio
+        return self.get_memusage()
 
-interval = 5
-mountpoint = '/home'
-device = None #device='/dev/sda9'
-netcard = 'eth0'
-psname = 'chrome'
+    def get_netrecv_idle(self):
+        return self.bandwidth_max - self.netrecv
+
+    def get_netsent_idle(self):
+        return self.bandwidth_max - self.netsent
+    
+    def get_north_concurrencies(self):
+        #TODO: What exactly does it mean?
+        return 0
+
+    def get_south_concurrencies(self):
+        return 0
+
 
 
 if __name__ == '__main__':
@@ -244,17 +285,25 @@ if __name__ == '__main__':
     logger.addHandler(log_FileHandler)
 
 
-    ndst = NodeState(interval=interval, mountpoint=mountpoint, device=device, netcard=netcard, psname=psname)
+    ndst = NodeState(interval=1, mountpoint=mountpoint, device=device, netcard=netcard, psname=psname)
 
     try:
         while 1:
-            print "diskfree: %s" % ndst.get_diskfree()
-            print "memusage: %s" % ndst.get_memusage()
-            print "dkr:%s, dkw:%s, nets:%s, netr:%s" % ndst.get_io()
+            dkread, dkwrite, netsent, netrecv = ndst.get_io()
+            print "dkr:%sbyte/s, dkw:%sbyte/s, nets:%sbyte/s, netr:%sbyte/s" % (dkread, dkwrite, netsent, netrecv)
             
             #get_cpuusage must after get_io
-            print "cpuusage: %s" % ndst.get_cpuusage()
+            print "cpuusage: %s%%" % ndst.get_cpuusage()
             print "conns:    %s" % ndst.get_connections()
+            print "memusage: %s%%" % ndst.get_memusage()
+            print "diskfree: %s" % ndst.get_diskfree()
+            print "cpupeak: %s" % ndst.get_cpupeak_ratio()
+            print "mempeak: %s" % ndst.get_mempeak_ratio()
+            print "netrecvidle: %s" % ndst.get_netrecv_idle()
+            print "netsentidle: %s" % ndst.get_netsent_idle()
+            print "nconcur: %s" % ndst.get_north_concurrencies()
+            print "sconcur: %s" % ndst.get_south_concurrencies()
+            
             ndst.set_interval(interval)
     except Exception as exc:
         print exc

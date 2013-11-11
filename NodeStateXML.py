@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 import os
 import socket
 import urllib2
@@ -24,11 +25,11 @@ else:
 
 class NodeStateXML(object):
     def __init__(self, nodeID, wwwroot = '/data', filename=None, posturl=None,
-                 ip = None,
-                 nodeStatus="idle", CntUserNow="200", CntUserMax="500", BWNow="200", BWMax="500", 
-                 CPUAverageRatio="3", CPUPeakRatio="5", memAverageRatio="20", memPeakRatio="30", 
-                 northboundIdleBW="100", northboundConcurrencies="150", southboundIdleBW="300", southboundConcurriencies="200",
-                 idleDiskSpace="5t", IOWBw="50Mbps", IORBw="70Mbps", timeStamp="1383593423",                  
+                 ip = None, nodeStatus="0", 
+                 #CntUserNow=0, CntUserMax=1000, BWNow=0, BWMax=1024*1024*1024/8, 
+                 #CPUAverageRatio=0, CPUPeakRatio=0, memAverageRatio=0, memPeakRatio=0, 
+                 #northboundIdleBW=0, northboundConcurrencies=0, southboundIdleBW=0, southboundConcurriencies=0,
+                 #idleDiskSpace=0, IOWBw=0, IORBw=0,                  
                  ifname='eth0', port = '80', hostname = None, xmlUrl=None, 
                 ):
 
@@ -64,22 +65,22 @@ class NodeStateXML(object):
         self.nodeLoad = ET.SubElement(self.__nodeLoadList, "nodeLoad")
         self.nodeLoad.set("nodeID", self.nodeID)
         self.nodeLoad.set("nodeStatus", nodeStatus)
-        self.nodeLoad.set("CntUserNow", CntUserNow)
-        self.nodeLoad.set("CntUserMax", CntUserMax)
-        self.nodeLoad.set("BWNow", BWNow)
-        self.nodeLoad.set("BWMax", BWMax)
-        self.nodeLoad.set("CPUAverageRatio", CPUAverageRatio)
-        self.nodeLoad.set("CPUPeakRatio", CPUPeakRatio)
-        self.nodeLoad.set("memAverageRatio", memAverageRatio)
-        self.nodeLoad.set("memPeakRatio", memPeakRatio)
-        self.nodeLoad.set("northboundIdleBW", northboundIdleBW)
-        self.nodeLoad.set("northboundConcurrencies", northboundConcurrencies)
-        self.nodeLoad.set("southboundIdleBW", southboundIdleBW)
-        self.nodeLoad.set("southboundConcurriencies", southboundConcurriencies)
-        self.nodeLoad.set("idleDiskSpace", idleDiskSpace)
-        self.nodeLoad.set("IOWBw", IOWBw)
-        self.nodeLoad.set("IORBw", IORBw)
-        self.nodeLoad.set("timeStamp", timeStamp)
+        #self.nodeLoad.set("CntUserNow", CntUserNow)
+        #self.nodeLoad.set("CntUserMax", CntUserMax)
+        #self.nodeLoad.set("BWNow", BWNow)
+        #self.nodeLoad.set("BWMax", BWMax)
+        #self.nodeLoad.set("CPUAverageRatio", CPUAverageRatio)
+        #self.nodeLoad.set("CPUPeakRatio", CPUPeakRatio)
+        #self.nodeLoad.set("memAverageRatio", memAverageRatio)
+        #self.nodeLoad.set("memPeakRatio", memPeakRatio)
+        #self.nodeLoad.set("northboundIdleBW", northboundIdleBW)
+        #self.nodeLoad.set("northboundConcurrencies", northboundConcurrencies)
+        #self.nodeLoad.set("southboundIdleBW", southboundIdleBW)
+        #self.nodeLoad.set("southboundConcurriencies", southboundConcurriencies)
+        #self.nodeLoad.set("idleDiskSpace", idleDiskSpace)
+        #self.nodeLoad.set("IOWBw", IOWBw)
+        #self.nodeLoad.set("IORBw", IORBw)
+        #self.nodeLoad.set("timeStamp", timeStamp)
         self.nodeLoad.set("xmlUrl", self.xmlUrl)
 
         self.__tree = ET.ElementTree(self.__root)

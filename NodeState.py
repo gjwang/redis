@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+# -*- coding: utf-8 -*-
 '''
 Created on 2013-11-05
 
@@ -15,20 +15,9 @@ import logging.handlers
 import time
 from checkNodeState import  NodeState
 from NodeStateXML import NodeStateXML
+from conf import *
 
 
-
-nodeID = 'jx_ja'
-interval = 10
-mountpoint = '/home'
-device = None #device='/dev/sda9'
-netcard = 'eth0'
-psname = 'chrome'
-postUrl = 'http://223.82.137.218:8088/lua'
-wwwroot = '/var/www'
-xmlfilename="NodeState.xml"
-
-logfilename = "nodestate.log"
 
 #main would never exit unless something unknown error
 def main():
@@ -50,30 +39,41 @@ def main():
     ndst.set_interval(interval=1)
     while 1:    
         try:
-	    #get_io must be call before get get_cpuusage
+            #get_io should be called first
             dkread, dkwrite, netsent, netrecv = ndst.get_io()
             
-            ndstxml.setConnNow(str(ndst.get_connections()))
-            ndstxml.setCPUAverageRatio(str(ndst.get_cpuusage()))
-            ndstxml.setmemAverageRatio(str(ndst.get_memusage()))
+            ndstxml.setBWMax(str(ndst.get_bwmax()))
+            ndstxml.setBWNow(str(ndst.get_netsent_idle()))
 
-            ndstxml.setnorthboundConcurrencies(str(netrecv))
-            ndstxml.setsouthboundConcurriencies(str(netsent))
+            ndstxml.setConnNow(str(ndst.get_connections()))
+            ndstxml.setConnMax(str(ndst.get_conn_max()))
+
+            ndstxml.setCPUAverageRatio(str(ndst.get_cpuusage()))
+            ndstxml.setCPUPeakRatio(str(ndst.get_cpupeak_ratio()))
+            ndstxml.setmemAverageRatio(str(ndst.get_memusage()))
+            ndstxml.setmemPeakRatio(str(ndst.get_mempeak_ratio()))
+
+            ndstxml.setnorthboundConcurrencies(str(ndst.get_north_concurrencies()))
+            ndstxml.setsouthboundConcurriencies(str(ndst.get_south_concurrencies()))
+            ndstxml.setnorthboundIdleBW(str(ndst.get_netrecv_idle()))
+            ndstxml.setsouthboundIdleBW(str(ndst.get_netsent_idle()))
+
             ndstxml.setidleDiskSpace(str(ndst.get_diskfree()))
             ndstxml.setDiskIORBw(str(dkread))
             ndstxml.setDiskIOWBw(str(dkwrite))
             ndstxml.settimeStamp(str(time.time()))
             
-            ndstxml.setNodeStatus("idle")
+            ndstxml.setNodeStatus('0')#0: 正常
             ndstxml.writeToFile()
 
-            ndstxml.postToServer()
-            
+            #print ndstxml.tostring()
+            ndstxml.postToServer()            
             ndst.set_interval(interval)
-	    logger.info("xmlstring: %s", ndstxml.tostring());
+
+            logger.info("xmlstring: %s", ndstxml.tostring());
         except Exception as exc:
-            logger.error("Exception: %s while checking node state", exc)
             print "Exception: %s while checking node state" % exc
+            logger.error("Exception: %s while checking node state", exc)
             time.sleep(interval)        
 
 
@@ -83,6 +83,7 @@ if __name__ == '__main__':
             #main would never exit unless something unknown error
             main()
         except Exception as exc:
-            logger.error("Exception: %s while main function", exc)
             print "Exception: %s while main function" % exc
+            logger = logging.getLogger()
+            logger.error("Exception: %s while main function", exc)
         time.sleep(interval)
