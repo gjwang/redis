@@ -261,6 +261,9 @@ class NodeState(object):
 
     def get_netsent_idle(self):
         return self.bandwidth_max - self.netsent
+
+    def get_netbw(self):
+        return self.netrecv + self.netsent
     
     def get_north_concurrencies(self):
         #TODO: What exactly does it mean?
