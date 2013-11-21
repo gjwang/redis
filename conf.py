@@ -17,9 +17,9 @@ netcard = 'eth0'
 port = '80'
 #publishing server's name
 psname = 'ngnix'
-#the host's url for posting xml file
+#the host's url for posting xml string
 postUrl = 'http://xxx:port/lua'
-#
+#local xml file's path
 wwwroot = '/data/ysten'
 #xml file for posting
 xmlfilename="NodeState.xml"
