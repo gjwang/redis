@@ -273,7 +273,9 @@ class NodeState(object):
         return 0
 
     def get_cpu_loadavg(self):
-	return os.getloadavg()[0];
+	return os.getloadavg()[0]
+
+
 if __name__ == '__main__':
     formatter = logging.Formatter('%(asctime)s - %(levelname)s: %(message)s')
     log_FileHandler = logging.handlers.TimedRotatingFileHandler(filename = "NodeStateXML.log",

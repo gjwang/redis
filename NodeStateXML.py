@@ -138,6 +138,12 @@ class NodeStateXML(object):
     def settimeStamp(self, timeStamp):
         self.nodeLoad.set("timeStamp", timeStamp)
 
+    def setHostIP(self):
+	self.nodeLoad.set("IP", self.ip)
+
+    def setWeight(self,weight):
+	self.nodeLoad.set("Weight",weight)
+
     def tostring(self):
         return ET.tostring(self.__root, encoding="UTF-8")
     

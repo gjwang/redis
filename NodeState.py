@@ -34,7 +34,7 @@ def main():
     logger.addHandler(log_FileHandler)    
 
     ndstxml = NodeStateXML(filename=xmlfilename, nodeID=nodeID, wwwroot=wwwroot, posturl=postUrl, port=port)
-    ndst = NodeState(interval=interval, mountpoint=mountpoint, device=device, netcard=netcard, psname=psname)
+    ndst = NodeState(interval=interval, mountpoint=mountpoint, device=device, netcard=netcard,bandwidth_max=bandwidth_max,conn_max=conn_max, psname=psname)
             
     ndst.set_interval(interval=1)
     while 1:    
@@ -63,10 +63,11 @@ def main():
             ndstxml.setDiskIORBw(str(dkread))
             ndstxml.setDiskIOWBw(str(dkwrite))
             ndstxml.settimeStamp(str(time.time()))
-            
+            ndstxml.setHostIP() 
+	    ndstxml.setWeight(str(weight))
             ndstxml.setNodeStatus('0')#0: 正常
             ndstxml.writeToFile()
-
+            
             #print ndstxml.tostring()
             ndstxml.postToServer()            
             ndst.set_interval(interval)
