@@ -102,6 +102,8 @@ class NodeStateXML(object):
 
     def setCPUAverageRatio(self, CPUAverageRatio):
         self.nodeLoad.set("CPUAverageRatio", CPUAverageRatio)
+    def setCPULoadavg(self, CPULoadAvg):
+	self.nodeLoad.set("CPULoadAvg", CPULoadAvg)
 
     def setCPUPeakRatio(self, CPUPeakRatio):
         self.nodeLoad.set("CPUPeakRatio", CPUPeakRatio)

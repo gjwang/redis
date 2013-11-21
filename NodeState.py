@@ -33,7 +33,7 @@ def main():
     logger.setLevel(logging.INFO)
     logger.addHandler(log_FileHandler)    
 
-    ndstxml = NodeStateXML(filename=xmlfilename, nodeID=nodeID, wwwroot=wwwroot, posturl=postUrl)
+    ndstxml = NodeStateXML(filename=xmlfilename, nodeID=nodeID, wwwroot=wwwroot, posturl=postUrl, port=port)
     ndst = NodeState(interval=interval, mountpoint=mountpoint, device=device, netcard=netcard, psname=psname)
             
     ndst.set_interval(interval=1)
@@ -43,10 +43,11 @@ def main():
             dkread, dkwrite, netsent, netrecv = ndst.get_io()
             
             ndstxml.setBWMax(str(ndst.get_bwmax()))
-            ndstxml.setBWNow(str(ndst.get_netsent_idle()))
+            ndstxml.setBWNow(str(ndst.get_netbw()))
 
             ndstxml.setConnNow(str(ndst.get_connections()))
             ndstxml.setConnMax(str(ndst.get_conn_max()))
+	    ndstxml.setCPULoadavg(str(ndst.get_cpu_loadavg()))
 
             ndstxml.setCPUAverageRatio(str(ndst.get_cpuusage()))
             ndstxml.setCPUPeakRatio(str(ndst.get_cpupeak_ratio()))

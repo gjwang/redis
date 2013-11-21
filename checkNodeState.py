@@ -272,8 +272,8 @@ class NodeState(object):
     def get_south_concurrencies(self):
         return 0
 
-
-
+    def get_cpu_loadavg(self):
+	return os.getloadavg()[0];
 if __name__ == '__main__':
     formatter = logging.Formatter('%(asctime)s - %(levelname)s: %(message)s')
     log_FileHandler = logging.handlers.TimedRotatingFileHandler(filename = "NodeStateXML.log",
@@ -306,6 +306,8 @@ if __name__ == '__main__':
             print "netsentidle: %s" % ndst.get_netsent_idle()
             print "nconcur: %s" % ndst.get_north_concurrencies()
             print "sconcur: %s" % ndst.get_south_concurrencies()
+            print "cpu_loadavg: %s" % ndst.get_cpu_loadavg()
+		
             
             ndst.set_interval(interval)
     except Exception as exc:
