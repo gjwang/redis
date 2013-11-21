@@ -27,3 +27,7 @@ xmlfilename="NodeState.xml"
 logfilename = "log/nodestate.log"
 #所有主机整体配置的综合系数
 weight=1
+#网卡最大带宽
+bandwidth_max=1024*1024*1024/8
+#主机最多可以承载多少用户数
+conn_max=1000
